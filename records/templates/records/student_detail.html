@@ -1,0 +1,38 @@
+{% extends "records/base.html" %}
+{% load crispy_forms_tags %}
+{% block content %}
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+<div class="container mt-4">
+  <h2>Documents for {{ student.first_name }} {{ student.last_name }}</h2>
+
+  <!-- Upload Form -->
+  <h4 class="mb-3">Upload a Document</h4>
+  <form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    {{ form|crispy }}
+    <button class="btn btn-primary" type="submit" name="upload_document">Upload</button>
+  </form>
+
+  <hr>
+
+  <!-- Display Documents by Category -->
+  {% for category, label in form.fields.category.choices %}
+    <h4>{{ label }}</h4>
+    <ul class="list-group">
+      {% for doc in documents %}
+        {% if doc.category == category %}
+        <li class="list-group-item">
+          <strong>{{ doc.student }}:</strong> <a href="{{ doc.get_file_url }}" target="_blank">{{ doc.file.name }}</a>
+          <small>Uploaded by: {{ doc.uploaded_by }} on {{ doc.uploaded_at|date:"M d, Y" }}</small>
+          <a href="{% url 'delete_document' doc.id %}" class="btn btn-danger btn-sm float-end">Delete</a>
+          <a href="{% url 'edit_document' doc.id %}" class="btn btn-primary btn-sm float-end">Edit</a>
+        </li>
+        {% endif %}
+      {% endfor %}
+    </ul>
+  {% empty %}
+    <p>No documents uploaded for this student.</p>
+  {% endfor %}
+</div>
+{% endblock %}
