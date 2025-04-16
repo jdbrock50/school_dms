@@ -3,6 +3,7 @@ from .models import Student, Document
 from .forms import DocumentForm, StudentForm
 from django.contrib.auth.decorators import login_required
 from django.db.models import Q
+from django.views.generic import DetailView
 
 def student_list(request):
     search_query = request.GET.get('q', '')
@@ -95,3 +96,38 @@ def edit_document(request, pk):
         form = DocumentForm(instance=document)
     
     return render(request, 'records/edit_document.html', {'form': form, 'document': document})
+
+@login_required
+def document_detail(request, document_id):
+    document = get_object_or_404(Document, pk=document_id)
+    file_url = document.file.url
+    file_name = document.file.name.lower()
+
+    is_pdf = file_name.endswith('.pdf')
+    is_image = any(file_name.endswith(ext) for ext in ['.jpg', '.jpeg', '.png', '.gif'])
+
+    context = {
+        'document': document,
+        'is_pdf': is_pdf,
+        'is_image': is_image,
+        'file_url': file_url
+    }
+    return render(request, 'records/document_detail.html', context)
+
+class DocumentView(DetailView):
+    model = Document
+    template_name = 'records/document_detail.html'
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        document = self.get_object()
+        file_url = document.file.url
+        file_name = document.file.name.lower()
+
+        is_pdf = file_name.endswith('.pdf')
+        is_image = any(file_name.endswith(ext) for ext in ['.jpg', '.jpeg', '.png', '.gif'])
+
+        context['is_pdf'] = is_pdf
+        context['is_image'] = is_image
+        context['file_url'] = file_url
+        return context

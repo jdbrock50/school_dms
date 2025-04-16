@@ -5,7 +5,13 @@
 
 <div class="container mt-4">
   <h2>Documents for {{ student.first_name }} {{ student.last_name }}</h2>
-
+  <h4>Student ID: {{ student.student_id }}</h4>
+  <h4>Grade Level: {{ student.grade_level }}</h4>
+  <hr>
+  {% if user.is_staff %}
+  <a href="{% url 'edit_student' student.id %}" class="btn btn-secondary">Edit Student</a>
+  <a href="{% url 'delete_student' student.id %}" class="btn btn-danger">Delete Student</a>
+  {% endif %}
   <!-- Upload Form -->
   <h4 class="mb-3">Upload a Document</h4>
   <form method="post" enctype="multipart/form-data">
@@ -25,8 +31,11 @@
         <li class="list-group-item">
           <strong>{{ doc.student }}:</strong> <a href="{{ doc.get_file_url }}" target="_blank">{{ doc.file.name }}</a>
           <small>Uploaded by: {{ doc.uploaded_by }} on {{ doc.uploaded_at|date:"M d, Y" }}</small>
+          {% if user.is_staff %}
           <a href="{% url 'delete_document' doc.id %}" class="btn btn-danger btn-sm float-end">Delete</a>
-          <a href="{% url 'edit_document' doc.id %}" class="btn btn-primary btn-sm float-end">Edit</a>
+          {% endif %}
+          <a href="{% url 'document_detail' doc.id %}" class="btn btn-primary btn-sm float-end">View</a>
+          <a href="{% url 'edit_document' doc.id %}" class="btn btn-secondary btn-sm float-end">Edit</a>
         </li>
         {% endif %}
       {% endfor %}
